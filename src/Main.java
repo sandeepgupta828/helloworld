@@ -45,9 +45,12 @@ public class Main {
         //LongestIncreasingSequence lis = new LongestIncreasingSequence();
         //lis.solution(new int[] {10, 22, 9, 33, 21, 50, 41, 60, 80});
 
-        AllPasswordsOnKeypad allPasswordsOnKeypad = new AllPasswordsOnKeypad();
+        //AllPasswordsOnKeypad allPasswordsOnKeypad = new AllPasswordsOnKeypad();
         //allPasswordsOnKeypad.solution(new int[][]{{1,2,3},{4,5,6},{7,8,9}});
-        allPasswordsOnKeypad.solution(null);
+        //allPasswordsOnKeypad.solution(null);
+
+        AllWordsFromPhoneNumber allWordsFromPhoneNumber = new AllWordsFromPhoneNumber();
+        allWordsFromPhoneNumber.solution(new int[] {4,6,6,5,2,2,4});
 
     }
 }
