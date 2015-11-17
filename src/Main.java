@@ -52,5 +52,8 @@ public class Main {
         //AllWordsFromPhoneNumber allWordsFromPhoneNumber = new AllWordsFromPhoneNumber();
         //allWordsFromPhoneNumber.solution(new int[] {4,6,6,5,2,2,4});
 
+        //Permute permute = new Permute();
+        //permute.solution("abcd");
+
     }
 }
