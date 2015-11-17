@@ -49,8 +49,8 @@ public class Main {
         //allPasswordsOnKeypad.solution(new int[][]{{1,2,3},{4,5,6},{7,8,9}});
         //allPasswordsOnKeypad.solution(null);
 
-        AllWordsFromPhoneNumber allWordsFromPhoneNumber = new AllWordsFromPhoneNumber();
-        allWordsFromPhoneNumber.solution(new int[] {4,6,6,5,2,2,4});
+        //AllWordsFromPhoneNumber allWordsFromPhoneNumber = new AllWordsFromPhoneNumber();
+        //allWordsFromPhoneNumber.solution(new int[] {4,6,6,5,2,2,4});
 
     }
 }

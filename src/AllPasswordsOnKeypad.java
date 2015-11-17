@@ -37,7 +37,7 @@ public class AllPasswordsOnKeypad {
         Integer y;
 
         boolean isAdjacent(Coordinate otherCo) {
-            if ((otherCo.x == x && Math.abs(otherCo.y - y) == 1) || (otherCo.y == y && Math.abs(otherCo.x - x) == 1)) {
+            if ((otherCo.x == x && Math.abs(otherCo.y - y) == 1) || (otherCo.y == y && Math.abs(otherCo.x - x) == 1) || (Math.abs(otherCo.x - x) == 1 &&  Math.abs(otherCo.y - y) == 1)) {
                 return true;
             }
             return false;
@@ -86,9 +86,12 @@ public class AllPasswordsOnKeypad {
             }
         }
 
+        Integer totalPasswords = 0;
         for(GNode node : mapNodes.values()) {
-            System.out.println("Node=" + node.value + ": count passwords ending at this node = "+ node.allPathsEndingAtNode.size() + " Passwords:"+ node.allPathsEndingAtNode.toString() );
+            totalPasswords += node.allPathsEndingAtNode.size();
+            System.out.println("Node=" + node.value + ": count passwords ending at this node = " + node.allPathsEndingAtNode.size() + " Passwords:" + node.allPathsEndingAtNode.toString());
         }
+        System.out.println("Total="+totalPasswords);
     }
 
     void extendPathsFromAdjNodeToNewNode(GNode existingNode, GNode newNode) {
@@ -121,8 +124,8 @@ public class AllPasswordsOnKeypad {
 
     void addReversePaths(GNode node) {
         for (ArrayList<Integer> path : node.allPathsEndingAtNode) {
-            if (path.size() > 1) {
-                GNode endNodeOfReversePath = mapNodes.get(path.get(0));
+            GNode endNodeOfReversePath = mapNodes.get(path.get(0));
+            if (path.size() > 1 && endNodeOfReversePath != node) {
                 ArrayList<Integer> revPath = reversePath(path);
                 endNodeOfReversePath.allPathsEndingAtNode.add(revPath);
                 endNodeOfReversePath.newPathsEndingAtNode.add(revPath);
@@ -146,7 +149,7 @@ public class AllPasswordsOnKeypad {
         explorePath.add(targetNode.value);
         Integer numPathsAddedInThisCall = 0;
         for(ArrayList<Integer> path: sourceNode.newPathsEndingAtNode) {
-            if (path.size() == 1 || (path.size() > 1 && !edgeAlreadyPresentInPath(path, sourceNode.value, targetNode.value))) {
+            if (path.size() == 1 || (path.size() > 1 && !path.contains(targetNode.value))) {
                 ArrayList<Integer> newPath = new ArrayList<>(path.size()+1);
                 newPath.addAll(path);
                 newPath.add(targetNode.value);
