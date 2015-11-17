@@ -55,5 +55,8 @@ public class Main {
         //Permute permute = new Permute();
         //permute.solution("abcd");
 
+        Allcombinations allcombinations = new Allcombinations();
+        allcombinations.solution("abcdefgh");
+
     }
 }
