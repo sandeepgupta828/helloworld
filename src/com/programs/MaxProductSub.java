@@ -5,6 +5,11 @@ package com.programs;
  */
 public class MaxProductSub {
 
+    /**
+     * Maintain product until each negative number, to remove if we encounter a next bigger (in abs value) negative number
+     * @param inAr
+     * @return
+     */
     public int[] solution(int[] inAr) {
         if (inAr != null && inAr.length > 0) {
 

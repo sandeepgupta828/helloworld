@@ -1,22 +1,23 @@
 package com.programs;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Main {
 
     public static void main(String[] args) {
-        System.out.println("Hello World!");
         //MinAbsSum sol = new MinAbsSum();
         //int[] arr = {2};
         //int sum = sol.solution(arr);
         //System.out.println(Integer.toString(sum));
 
-        //LCS lcs = new LCS();
-        //System.out.println(Integer.toString(lcs.solution("abcdx", "bcdefvx")));
+        LCS lcs = new LCS();
+        System.out.println(Integer.toString(lcs.solution("abcdx", "bcdefvx")));
 
         //MaxProductSub max = new MaxProductSub();
         //int[] subMax = max.solution(new int[] {1, 24, 0, 1, 1, -2, 0, 5,5});
+        //int[] subMax = max.solution(new int[] {-1, 26, -1, -2, 0, 1, 1, -2, 0, 5,5});
+        //int[] subMax = max.solution(new int[] {1, -2, -3, 0, 7, -8, -2});
+
         //System.out.println(Arrays.toString(subMax));
 
         //MinJumps minJumps = new MinJumps();
@@ -57,8 +58,8 @@ public class Main {
         //Permute permute = new Permute();
         //permute.solution("abcd");
 
-        Allcombinations allcombinations = new Allcombinations();
-        allcombinations.solution("abcdefgh");
+        //Allcombinations allcombinations = new Allcombinations();
+        //allcombinations.solution("abcdefgh");
 
     }
 }
