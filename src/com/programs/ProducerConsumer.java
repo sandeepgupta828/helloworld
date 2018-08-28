@@ -51,12 +51,13 @@ public class ProducerConsumer {
                         System.out.println("Produced: " + queue.get(0));
                         queue.notify();
                     }
+                    try {
+                        queue.wait();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
-                try {
-                    queue.wait();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+
             }
 
         }
@@ -72,16 +73,16 @@ public class ProducerConsumer {
 
         public void run() {
             while(true) {
-                try {
-                    queue.wait();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
                 synchronized (queue) {
                     if (queue.size() > 0) {
                         System.out.println("Consumed: " + queue.get(0));
                         queue.remove(0);
                         queue.notify();
+                    }
+                    try {
+                        queue.wait();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
                 }
             }
