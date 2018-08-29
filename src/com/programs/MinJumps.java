@@ -1,16 +1,25 @@
 package com.programs;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by sagupta on 11/2/15.
  */
 public class MinJumps {
 
-    public int[] solution(int[] inAr) {
+    public static void main(String[] args) {
+
+        MinJumps minJumps = new MinJumps();
+        Integer[] array = {5 ,1 ,1, 1};
+        System.out.println("Min jumps = " + minJumps.solution(array).toString());
+    }
+
+    public List<Integer> solution(Integer[] inAr) {
 
         int len = inAr.length;
-        int[] jumpArray = new int[inAr.length];
+        Integer[] jumpArray = new Integer[inAr.length];
         int k = 0;
         jumpArray[k++] = inAr[0];
         boolean jumpedToEnd = false;
@@ -34,6 +43,6 @@ public class MinJumps {
                 jumpArray[k++] = inAr[maxReachSIndex];
             }
         }
-        return jumpArray;
+        return Arrays.asList(jumpArray);
     }
 }
