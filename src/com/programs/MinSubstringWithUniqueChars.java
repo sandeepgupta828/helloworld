@@ -11,7 +11,7 @@ public class MinSubstringWithUniqueChars {
     public static void main(String[] args) {
         // create obj and call method
         MinSubstringWithUniqueChars minSubstringWithUniqueChars = new MinSubstringWithUniqueChars();
-        System.out.println(minSubstringWithUniqueChars.findMinSubstring("xyza".toCharArray(), "xyyyayzyyzyyxxxxyyzzaxy"));
+        System.out.println(minSubstringWithUniqueChars.findMinSubstring2("xyza".toCharArray(), "xyyyayzyyzyyxxxxyyzzaxy"));
     }
 
     Map<Character, Integer> latestIndex = new HashMap<>();
