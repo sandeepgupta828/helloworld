@@ -1,0 +1,159 @@
+package com.programs;
+
+import java.util.Scanner;
+
+public class Reconcile {
+import java.io.*;
+import java.util.*;
+import java.text.*;
+import java.math.*;
+import java.util.regex.*;
+/*
+The Problem:
+Reconciliation is a term Addepar uses for a set of correctness and consistency measures applied to the data we receive and use in financial calculations.
+
+One of the most common reconciliation checks is called unit reconciliation, which answers the question, "does the transaction history add up to the number of shares the bank says I have?". For example, if the bank said I had 100 shares of Apple at the end of yesterday, and I bought 20 shares of Apple today, then we expect the bank to report 120 shares at the end of today. This surprisingly isn't always the case! The bank may send incomplete data, we may be parsing it incorrectly, or there may be events like corporate actions or trade settlement lag that cause an inconsistency.
+
+Unit reconciliation is very important, because numbers that don't add up shouldn't be trusted for any metrics.
+
+The Input:
+recon.in has three sections:
+D0-POS describes the positions in the account at the end of Day 0. Each record is a space-separated pair of Symbol and Shares. For example "AAPL 10" means 10 shares of AAPL were held at the end of Day 0, and "Cash 122.16" means we had $122.16 in the account at the end of Day 0.
+D1-TRN describes the transactions that occurred in the account on Day 1. Each record is space-separated collection of four items: Symbol, Transaction Code, Shares, and Total Value. For example, the record "AAPL BY 10 6123.21" means 10 shares of AAPL were bought for a total cost of $6123.21.
+D1-POS describes the positions in the account at the end of Day 1, and has the same format as D0-POS.
+
+The Output:
+The objective is to write a program that prints an alphabetically ordered, space-separated record for each position that fails unit reconciliation. For example, "AAPL 10" means that the reported shares of AAPL in D1-POS is 10 higher than expected based on the transactions.
+
+The outputs must be printed in alphabetical order.
+
+Sample input:
+recon.in
+--------
+D0-POS
+AAPL 100
+GOOG 200
+Cash 10
+
+D1-TRN
+AAPL SL 50 30000
+GOOG BY 10 10000
+
+D1-POS
+AAPL 50
+GOOG 220
+Cash 20000
+
+
+Sample output:
+recon.out
+---------
+Cash -10
+GOOG 10
+ */
+
+
+    public class Reconcile {
+
+    /*
+     * Complete the function below.
+     */
+
+        public class Item {
+            private String symbol;
+            private Integer value_start = 0;
+            private Integer vaule_end = 0;
+            // assume getter and setter and constructor
+            public Item(String symbol, Integer value_start){
+                //...
+            }
+        }
+
+        // example: AAPL -> { "symbol": "AAPL", "value_start": 100, "value_end": 50} }
+        private Map<String, Item> map = new HashMap();
+        private Map<String, Item> validityMap = new HashMap();
+
+        private processNextPOS(String line) {
+            if (line.equals("D0-POS")) return;
+            List<String> tokens = Splitter.on(" ").omitEmpityStrings().splitToList(line);
+            if (tokens.size() !=2) {
+                // log invalid line
+                return;
+            }
+            map.put(token.get(0), new Item(token.get(0), Integer.parseInt(token.get(1)));
+        }
+
+        private processNextTRN(String line) {
+            if (line.equals("D0-TRN")) return;
+            List<String> tokens = Splitter.on(" ").omitEmpityStrings().splitToList(line);
+            if (tokens.size() !=4) {
+                // log invalid line
+                return;
+            }
+            Item initialPos = new Item();
+            intialPost.setSymbol(token.get(0);
+
+            if (map.get(token.get(0) != null) {
+                // we have initial position
+                initialPos = map.get(token.get(0));
+            }
+
+            Integer quantityTRN = token.get(2);
+            Integer cashTRN = token.get(3);
+
+            if (token.get(1).equals("BY")) {
+                initialPos.getValueStart() + quantityTRN;
+                map.get("CASH").setValueEnd(map.get("CASH").getValueStart() - cashTRN));
+            }
+
+            if (token.get(1).equals("SL")) {
+                // validity check that token.get(0) must be present in the map or POS
+                initialPos.getValueStart() - quantityTRN;
+                map.get("CASH").setValueEnd(map.get("CASH").getValueStart() + cashTRN));
+            }
+        }
+
+
+
+
+        static void reconcile(String[] fileContents) {
+            // add error checking later..
+            boolean nextSection = false;
+            for (String line: fileContents) {
+                if (line.equals("D0-POS") || !nextSection) {
+                    // iterate thru next set of lines until we see a blank line
+                    processNextPOS(line);
+                }
+                if (line.equals("\r\n")) {
+                    nextSection = true;
+                }
+            }
+
+
+        }
+
+
+        public static void main(String[] args)  {
+            Scanner in = new Scanner(System.in);
+            int fileContents_size = 0;
+            fileContents_size = Integer.parseInt(in.nextLine().trim());
+
+            String[] fileContents = new String[fileContents_size];
+            for(int i = 0; i < fileContents_size; i++) {
+                String fileContents_item;
+                try {
+                    fileContents_item = in.nextLine();
+                } catch (Exception e) {
+                    fileContents_item = null;
+                }
+                fileContents[i] = fileContents_item;
+            }
+
+            reconcile(fileContents);
+
+        }
+
+
+    }
+
+}
