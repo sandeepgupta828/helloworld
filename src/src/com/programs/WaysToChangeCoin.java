@@ -1,8 +1,5 @@
 package com.programs;
 
-import com.sun.javafx.collections.ImmutableObservableList;
-import jdk.nashorn.internal.ir.annotations.Immutable;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
