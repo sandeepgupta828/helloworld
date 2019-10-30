@@ -1,5 +1,8 @@
 package com.programs;
 
+/**
+ * Add two arbritrary long numbers
+ */
 public class AddNumbers {
 
     public String addNumbers(String num1, String num2) {
