@@ -1,9 +1,6 @@
 package com.programs;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by sagupta on 11/3/15.
@@ -176,5 +173,10 @@ public class AllPasswordsOnKeypad {
         }
         explorePath.remove(explorePath.size()-1);
         return;
+    }
+
+    public static void main(String[] args) {
+        AllPasswordsOnKeypad allPasswords = new AllPasswordsOnKeypad();
+        allPasswords.solution(new int[][]{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}});
     }
 }
