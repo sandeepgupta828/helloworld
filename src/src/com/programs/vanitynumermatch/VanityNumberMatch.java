@@ -14,6 +14,7 @@ public class VanityNumberMatch {
      */
 
     private static Map<Character, Integer> t9Map = new HashMap<>();
+
     static {
         t9Map.put('A', 2);
         t9Map.put('B', 2);
@@ -46,14 +47,14 @@ public class VanityNumberMatch {
     public static List<String> vanity(List<String> codes, List<String> numbers) {
         Set<String> numberCodes = codes.stream().map(code -> mapCodeToNumber(code)).collect(Collectors.toSet());
         List<String> matchingNumbers = numbers.stream().filter(number -> hasAtLeastOneCode(numberCodes, number)).collect(Collectors.toList());
-        Collections.sort(matchingNumbers, (n1, n2) -> { return (int)(Long.parseLong(n1.substring(1)) - Long.parseLong(n2.substring(1)));});
+        Collections.sort(matchingNumbers);
         return matchingNumbers;
     }
 
     private static String mapCodeToNumber(String code) {
         StringBuilder builder = new StringBuilder();
         char[] charArray = code.toCharArray();
-        for (char ch: charArray) {
+        for (char ch : charArray) {
             builder.append(t9Map.get(ch));
         }
         return builder.toString();

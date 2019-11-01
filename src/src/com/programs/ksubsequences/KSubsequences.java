@@ -17,7 +17,7 @@ public class KSubsequences {
      * @param numberList
      * @return
      */
-    public static Map<Integer, List<List<Integer>>> kSub(int divisor, List<Integer> numberList) {
+    public static int kSub(int divisor, List<Integer> numberList) {
         // Write your code here
         Map<Integer, List<List<Integer>>> listOfSequencesEndingAtIndex = new HashMap<>();
         for (int i = 0; i < numberList.size(); i++) {
@@ -45,14 +45,15 @@ public class KSubsequences {
                 }
             }
         }
-        return listOfSequencesEndingAtIndex;
+        //return listOfSequencesEndingAtIndex;
+        return listOfSequencesEndingAtIndex.values().stream().map(val -> val.size()).reduce((a, b) -> a+b).get();
     }
 
 
     public static void main(String[] args) {
-        //System.out.println(KSubsequences.kSub(5, Arrays.asList(5, 10, 11, 9, 5)));
-        System.out.println(KSubsequences.kSub(5, Arrays.asList(2, 5, 3, 10)));
-        System.out.println(KSubsequences.kSub(5, Arrays.asList(10, 10, 10, 1, 1, 1, 1, 1)));
+        System.out.println(KSubsequences.kSub(5, Arrays.asList(5, 10, 11, 9, 5)));
+        //System.out.println(KSubsequences.kSub(5, Arrays.asList(2, 5, 3, 10)));
+        //System.out.println(KSubsequences.kSub(5, Arrays.asList(10, 10, 10, 1, 1, 1, 1, 1)));
 
     }
 }
