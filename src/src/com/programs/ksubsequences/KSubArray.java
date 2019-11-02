@@ -36,13 +36,6 @@ public class KSubArray {
             count[prefixSumListModulo.get(i)]++;
         }
 
-        // if count = n it => in nC2 ways we can choose 2 arrays
-        // to calculate number of such array we do summation of nC2 which is n(n-1)/2
-        int countOfSubArrays = 0;
-        for (int i = 0; i < count.length; i++) {
-            countOfSubArrays += (count[i] * count[i]) / 2;
-        }
-
         Map<Integer, List<Integer>> mapModuloValueToIndexList = new HashMap<>();
         for (int i = 0; i < prefixSumListModulo.size(); i++) {
             mapModuloValueToIndexList.putIfAbsent(prefixSumListModulo.get(i), new ArrayList<>());
@@ -88,6 +81,6 @@ public class KSubArray {
     }
 
     public static void main(String[] args) {
-        System.out.println(KSubArray.findAllKSubArrays(5, Arrays.asList(5, 10, 11, 9, 5)));
+        System.out.println(KSubArray.findAllKSubArrays(5, Arrays.asList(5, 3, 2, 10, 11, 9, 5)));
     }
 }
