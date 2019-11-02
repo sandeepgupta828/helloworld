@@ -15,22 +15,23 @@ public class KSubArray {
     public static List<List<Integer>> findAllKSubArrays(int divisor, List<Integer> numberList) {
         List<Integer> prefixSumList = new ArrayList<>();
         //compute the prefix sum array
-        prefixSumList.add(numberList.get(0));
-        for (int i = 1; i < numberList.size(); i++) {
-            prefixSumList.add(numberList.get(i) + prefixSumList.get(i - 1));
+        prefixSumList.add(0);
+        for (Integer number: numberList) {
+            prefixSumList.add(number + prefixSumList.get(prefixSumList.size()-1));
         }
-        // any sub array sum (i,j) (both inclusive) can be computed by prefixSum[j] - prefixSum[i-1] (if i-1 >=0 or 0) with j > i;
-        // also PS[j]-PS[i-1] modulo k == 0 => subarray is divisible by k
+        // prefix sum array has 1 additional element at the start = 0
+        // now prefixSum[j] - prefixSum[i] with j > i represents a subarray sum in original array for (i, j) j exclusive
+        // with prefixSum[length] representing the sum all the array
+        // also PS[j]-PS[i] modulo k == 0 => subarray (i, j) is divisible by k
         // => PS[j] modulo k == PS[i-1] modulo k is the condition for subarray to be qualified
 
-        // so let's computer prefix sum list modulo k
-
+        // so let's compute prefix sum list modulo k
         List<Integer> prefixSumListModulo = prefixSumList.stream().map(s -> s % divisor).collect(Collectors.toList());
 
-        // now prefix sum with same values from 0 to K-1 => arrays between them are eligible
+        // now prefix sum (modulo k) with same values from 0 to K-1 => arrays between them are eligible
         // gather count of prefix sums which are same
 
-        int[] count = new int[divisor - 1];
+        int[] count = new int[divisor];
         for (int i = 0; i < prefixSumListModulo.size(); i++) {
             count[prefixSumListModulo.get(i)]++;
         }
@@ -41,22 +42,24 @@ public class KSubArray {
         for (int i = 0; i < count.length; i++) {
             countOfSubArrays += (count[i] * count[i]) / 2;
         }
-        //return countOfSubArrays;
 
-        //====
-
-        Map<Integer, List<Integer>> map = new HashMap<>();
+        Map<Integer, List<Integer>> mapModuloValueToIndexList = new HashMap<>();
         for (int i = 0; i < prefixSumListModulo.size(); i++) {
-            map.putIfAbsent(prefixSumListModulo.get(i), new ArrayList<>());
-            map.get(prefixSumListModulo.get(i)).add(i);
+            mapModuloValueToIndexList.putIfAbsent(prefixSumListModulo.get(i), new ArrayList<>());
+            mapModuloValueToIndexList.get(prefixSumListModulo.get(i)).add(i);
         }
 
         List<List<Integer>> allSubArrays = new ArrayList<>();
-        map.values().forEach(indexList -> {
-            if (indexList.size() > 1) {
-                List<List<Integer>> twoCombinations = getCombinations(indexList, 2);
-                twoCombinations.stream().forEach(combPair -> allSubArrays.add(numberList.subList(combPair.get(0), combPair.get(1))));
+        mapModuloValueToIndexList.forEach((key, value) -> {
+            List<List<Integer>> combinations = Collections.emptyList();
+            if (value.size() > 1) {
+                // we'd need index pairs
+                combinations = getCombinations(value, Arrays.asList(2));
             }
+            // the indexes in comb list are from prefix sum/modulo list, but are applied to original list to get the sublist
+            // as it nicely captures the sub lists(arrays).
+            // e.g. index pair (1,3) in prefix sum/modulo k list = (sum up to 0, sum up to 2) and difference maps to sum of sublist [1,2] or [1,3) with 3 excluded t
+            combinations.stream().forEach(combList -> allSubArrays.add(numberList.subList(combList.get(0), combList.get(combList.size() - 1))));
         });
         return allSubArrays;
     }
@@ -65,7 +68,7 @@ public class KSubArray {
      * 0,5,7 ==> 0,5 : 0,7, 5,7
      * @return
      */
-    private static List<List<Integer>> getCombinations(List<Integer> list, int combSize) {
+    private static List<List<Integer>> getCombinations(List<Integer> list, List<Integer> combSizeNeeded) {
         List<List<Integer>> listOfCombinations = new ArrayList<>();
         for (int i = 0;i<list.size();i++) {
             int currentNum = list.get(i);
@@ -81,7 +84,7 @@ public class KSubArray {
             }
             listOfCombinations.addAll(listOfNewCombinations);
         }
-        return listOfCombinations.stream().filter(comb -> comb.size() == combSize).collect(Collectors.toList());
+        return listOfCombinations.stream().filter(comb -> combSizeNeeded.contains(comb.size())).collect(Collectors.toList());
     }
 
     public static void main(String[] args) {
