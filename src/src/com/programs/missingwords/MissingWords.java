@@ -15,20 +15,29 @@ public class MissingWords {
     public static List<String> missingWords(String s, String t) {
         // Write your code here
         if (Objects.nonNull(s) && Objects.nonNull(t)) {
-            Set<String> primaryWordSet = new LinkedHashSet<>();
-            for (String word : s.split(" ")) {
-                primaryWordSet.add(word);
+            List<String> sWords = Arrays.asList(s.split(" "));
+            List<String> tWords = Arrays.asList(t.split(" "));
+            List<String> missingWords = new ArrayList<>();
+
+            int sWordCount = 0;
+            for(int twordCount=0;twordCount<tWords.size();twordCount++) {
+                String tWord = tWords.get(twordCount);
+                // gather all the words in s until we hit this word
+                while(sWordCount < sWords.size()) {
+                    if (!tWord.equals(sWords.get(sWordCount))) {
+                        missingWords.add(sWords.get(sWordCount));
+                        sWordCount++;
+                    } else {
+                        sWordCount++;
+                        break;
+                    }
+                }
             }
-            Set<String> secondaryWordSet = new LinkedHashSet<>();
-            for (String word : t.split(" ")) {
-                secondaryWordSet.add(word);
+            while(sWordCount < sWords.size()) {
+                missingWords.add(sWords.get(sWordCount));
+                sWordCount++;
             }
-            if (!primaryWordSet.containsAll(secondaryWordSet)) {
-                throw new RuntimeException("t is not a subsequence of s");
-            }
-            // compute the difference
-            primaryWordSet.removeAll(secondaryWordSet);
-            return new ArrayList<>(primaryWordSet);
+            return missingWords;
         }
         return Collections.emptyList();
     }
