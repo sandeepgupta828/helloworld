@@ -35,6 +35,10 @@ public class SMSSplitting {
                     segmentCount++;
                 }
                 int messageLengthInSeg = MAX_SEG_LEN-suffixCount;
+
+                // account for not breaking words (tbd)
+
+
                 // now split the message in chunks of length = (160-suffixCount)
                 int count = 1;
                 for (int index=0;index < messageLen;index+=messageLengthInSeg) {

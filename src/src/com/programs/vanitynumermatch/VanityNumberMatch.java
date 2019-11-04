@@ -46,9 +46,8 @@ public class VanityNumberMatch {
 
     public static List<String> vanity(List<String> codes, List<String> numbers) {
         Set<String> numberCodes = codes.stream().map(code -> mapCodeToNumber(code)).collect(Collectors.toSet());
-        List<String> matchingNumbers = numbers.stream().filter(number -> hasAtLeastOneCode(numberCodes, number)).collect(Collectors.toList());
-        Collections.sort(matchingNumbers);
-        return matchingNumbers;
+        Set<String> matchingNumbers = numbers.stream().filter(number -> hasAtLeastOneCode(numberCodes, number)).collect(Collectors.toSet());
+        return matchingNumbers.stream().map(num -> Long.parseLong(num.substring(1))).sorted().map(num -> "+"+num).collect(Collectors.toList());
     }
 
     private static String mapCodeToNumber(String code) {

@@ -50,6 +50,6 @@ public class SquareSubsequences {
         return true;
     }
     public static void main(String[] args) {
-        System.out.println(SquareSubsequences.countSquareSubSequences("exgrujigskmvrzgf"));
+        System.out.println(SquareSubsequences.countSquareSubSequences("baaba"));
     }
 }
