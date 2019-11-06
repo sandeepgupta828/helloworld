@@ -5,12 +5,38 @@ import java.util.*;
 
 public class Solution {
     public static void main(String[] args) throws IOException {
-        SetAssociativeCacheRunner.parseInput(System.in);
+        // SetAssociativeCacheRunner.parseInput(System.in);
+
+        SetAssociativeCache<String, String> cache = new SetAssociativeCache<>(1, 2, new ReplacementAlgoFactory().createReplacementAlgo("LRUReplacementAlgo"));
+
+
+        Thread t1 = new Thread(() -> Solution.setRandomValues(cache));
+        Thread t2 = new Thread(() -> Solution.setRandomValues(cache));
+        Thread t3 = new Thread(() -> Solution.setRandomValues(cache));
+        Thread t4 = new Thread(() -> Solution.setRandomValues(cache));
+
+        t1.start();
+        t2.start();
+        t3.start();
+        t4.start();
+
+
+        cache.set(UUID.randomUUID().toString(), UUID.randomUUID().toString());
+        cache.set(UUID.randomUUID().toString(), UUID.randomUUID().toString());
+        cache.set(UUID.randomUUID().toString(), UUID.randomUUID().toString());
+        cache.set(UUID.randomUUID().toString(), UUID.randomUUID().toString());
+        cache.set(UUID.randomUUID().toString(), UUID.randomUUID().toString());
+    }
+
+    public static void setRandomValues(SetAssociativeCache<String, String> cache) {
+        while(true) {
+            cache.set(UUID.randomUUID().toString(), UUID.randomUUID().toString());
+        }
     }
 
     /**
      * Parses Test Case input to instantiate and invoke a SetAssociativeCache
-     *
+     * <p>
      * NOTE: You can typically ignore anything in here. Feel free to collapse...
      */
     static class SetAssociativeCacheRunner {
@@ -65,7 +91,7 @@ public class Solution {
      * - Data is structured into setCount # of setSize-sized sets.
      * - Every possible key is associated with exactly one set via a hashing algorithm
      * - If more items are added to a set than it has capacity for (i.e. > setSize items),
-     *      a replacement victim is chosen from that set using an LRU algorithm.
+     * a replacement victim is chosen from that set using an LRU algorithm.
      * <p>
      * NOTE: Part of the exercise is to allow for different kinds of replacement algorithms...
      */
@@ -74,8 +100,9 @@ public class Solution {
         int SetSize;
         int SetCount;
         CacheSet<TKey, TValue>[] Sets;
+        IReplacementAlgo replacementAlgo;
 
-        public SetAssociativeCache(int setCount, int setSize) {
+        public SetAssociativeCache(int setCount, int setSize, IReplacementAlgo replacementAlgo) {
             this.SetCount = setCount;
             this.SetSize = setSize;
             this.Capacity = this.SetCount * this.SetSize;
@@ -83,12 +110,14 @@ public class Solution {
             // Initialize the sets
             this.Sets = new CacheSet[this.SetCount];
             for (int i = 0; i < this.SetCount; i++) {
-                Sets[i] = new CacheSet<>(setSize);
+                Sets[i] = new CacheSet<>(setSize, replacementAlgo);
             }
         }
 
-        /** Gets the value associated with `key`. Throws if key not found. */
-        public TValue get(TKey key) {
+        /**
+         * Gets the value associated with `key`. Throws if key not found.
+         */
+        synchronized public TValue get(TKey key) {
             int setIndex = this.getSetIndex(key);
             CacheSet<TKey, TValue> set = this.Sets[setIndex];
             return set.get(key);
@@ -99,14 +128,16 @@ public class Solution {
          * If adding would exceed capacity, an existing key is chosen to replace using an LRU algorithm
          * (NOTE: It is part of this exercise to allow for more replacement algos)
          */
-        public void set(TKey key, TValue value) {
+        synchronized public void set(TKey key, TValue value) {
             int setIndex = this.getSetIndex(key);
             CacheSet<TKey, TValue> set = this.Sets[setIndex];
             set.set(key, value);
         }
 
-        /** Returns the count of items in the cache */
-        public int getCount() {
+        /**
+         * Returns the count of items in the cache
+         */
+        synchronized public int getCount() {
             int count = 0;
             for (int i = 0; i < this.Sets.length; i++) {
                 count += this.Sets[i].Count;
@@ -114,14 +145,31 @@ public class Solution {
             return count;
         }
 
-        /** Returns `true` if the given `key` is present in the set; otherwise, `false`. */
-        public boolean containsKey(TKey key) {
-            int setIndex = this.getSetIndex(key);
-            CacheSet<TKey, TValue> set = this.Sets[setIndex];
-            return set.containsKey(key);
+        /**
+         * Returns `true` if the given `key` is present in the set; otherwise, `false`.
+         */
+        synchronized public boolean containsKey(TKey key) {
+            return this.isInAnySet(key);
         }
 
-        /** Maps a key to a set */
+        /**
+         * checks if key is any of the sets
+         *
+         * @param key
+         * @return
+         */
+        private boolean isInAnySet(TKey key) {
+            for (int i = 0; i < this.Sets.length; i++) {
+                if (this.Sets[i].Count > 0 && this.Sets[i].containsKey(key)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /**
+         * Maps a key to a set
+         */
         private int getSetIndex(TKey key) {
             int c = Integer.MAX_VALUE;
             int s = -1;
@@ -134,6 +182,10 @@ public class Solution {
                     s = i;
                 }
             }
+            if (s == -1) {
+                // if we couldn't find a set because all of them are at capacity, pick the first set
+                s = 0;
+            }
             return s;
         }
     }
@@ -144,25 +196,29 @@ public class Solution {
     static class CacheSet<TKey, TValue> {
         int Capacity;
         CacheItem<TKey, TValue>[] Store;
-        LinkedList<TKey> UsageTracker;
-        public int Count;
+        IReplacementAlgo<TKey> replacementAlgo;
+        public int Count = 0;
 
-        public CacheSet(int capacity) {
+
+        public CacheSet(int capacity, IReplacementAlgo replacementAlgo) {
             this.Capacity = capacity;
-            this.UsageTracker = new LinkedList<>();
             this.Store = new CacheItem[capacity];
+            this.replacementAlgo = replacementAlgo;
         }
 
-        /** Gets the value associated with `key`. Throws if key not found. */
-        public TValue get(TKey key) {
+        /**
+         * Gets the value associated with `key`. Throws if key not found.
+         */
+        synchronized public TValue get(TKey key) {
             // If the key is present, update the usage tracker
-            if (this.containsKey(key)) {
+            int indexOfKey = this.findIndexOfKey(key);
+            if (indexOfKey >= 0) {
                 this.recordUsage(key);
             } else {
                 throw new RuntimeException(String.format("The key '%s' was not found", key));
             }
 
-            return this.Store[this.findIndexOfKey(key)].value;
+            return this.Store[indexOfKey].value;
         }
 
         /**
@@ -170,7 +226,7 @@ public class Solution {
          * If adding would exceed capacity, an existing key is chosen to replace using an LRU algorithm
          * (NOTE: It is part of this exercise to allow for more replacement algos)
          */
-        public void set(TKey key, TValue value) {
+        synchronized public void set(TKey key, TValue value) {
             int indexOfKey = this.findIndexOfKey(key);
 
             if (indexOfKey >= 0) {
@@ -181,12 +237,17 @@ public class Solution {
                 int indexToSet;
                 // If the set is at it's capacity
                 if (this.Count == this.Capacity) {
-                    // Choose the Least-Recently-Used (LRU) item to replace, which will be at the tail of the usage tracker
-                    // TODO: Factor this logic out to allow for custom replacement algos
-                    TKey keyToReplace = this.UsageTracker.getLast();
+                    TKey keyToReplace = replacementAlgo.getNextKeyToReplace();
                     indexToSet = this.findIndexOfKey(keyToReplace);
-
-                    // Remove the existing key
+                    if (indexToSet < 0) {
+                        // this is interesting case when we cannot find the key in cache that is tracked by replacement algo
+                        // this is only possible when removal from cache did not correspondingly remove the key in the replacement algo
+                        // this would be a "bug" in this implementation (to be figured)
+                        // but if it happens we pick a last index to be freed
+                        indexToSet = Capacity - 1;
+                        this.removeKey(this.Store[indexToSet].key);
+                    }
+                    // Remove the key provided by algo
                     this.removeKey(keyToReplace);
                 } else {
                     indexToSet = this.Count;
@@ -200,15 +261,17 @@ public class Solution {
             this.recordUsage(key);
         }
 
-        /** Returns `true` if the given `key` is present in the set; otherwise, `false`. */
-        public boolean containsKey(TKey key) {
+        /**
+         * Returns `true` if the given `key` is present in the set; otherwise, `false`.
+         */
+        synchronized public boolean containsKey(TKey key) {
             return this.findIndexOfKey(key) >= 0;
         }
 
         private void removeKey(TKey key) {
             int indexOfKey = this.findIndexOfKey(key);
+            replacementAlgo.recordKeyRemoval(key);
             if (indexOfKey >= 0) {
-                this.UsageTracker.remove(key);
                 this.Store[indexOfKey] = null;
                 this.Count--;
             }
@@ -222,8 +285,7 @@ public class Solution {
         }
 
         private void recordUsage(TKey key) {
-            this.UsageTracker.remove(key);
-            this.UsageTracker.addFirst(key);
+            this.replacementAlgo.recordKeyUsage(key);
         }
     }
 
@@ -246,18 +308,60 @@ public class Solution {
     /**
      * A common interface for replacement algos, which decide which item in a CacheSet to evict
      */
-    interface IReplacementAlgo {
-        // TODO: Define the interface for replacement algos...
+    interface IReplacementAlgo<TKey> {
+        TKey getNextKeyToReplace();
+
+        void recordKeyUsage(TKey key);
+
+        void recordKeyRemoval(TKey key);
     }
 
-    class LRUReplacementAlgo implements IReplacementAlgo {
+    static class LRUReplacementAlgo<TKey> implements IReplacementAlgo<TKey> {
+        Deque<TKey> keyDeque;
 
-        // TODO: Implement the interface defined above
+        public LRUReplacementAlgo() {
+            this.keyDeque = new ArrayDeque<>();
+        }
+
+        @Override
+        public TKey getNextKeyToReplace() {
+            return keyDeque.getLast();
+        }
+
+        @Override
+        public void recordKeyUsage(TKey key) {
+            keyDeque.remove(key);
+            keyDeque.addFirst(key);
+        }
+
+        @Override
+        public void recordKeyRemoval(TKey key) {
+            keyDeque.remove(key);
+        }
     }
 
-    class MRUReplacementAlgo implements IReplacementAlgo {
+    static class MRUReplacementAlgo<TKey> implements IReplacementAlgo<TKey> {
+        Deque<TKey> keyDeque;
 
-        // TODO: Implement the interface defined above
+        public MRUReplacementAlgo() {
+            this.keyDeque = new LinkedList<>();
+        }
+
+        @Override
+        public TKey getNextKeyToReplace() {
+            return keyDeque.getLast();
+        }
+
+        @Override
+        public void recordKeyUsage(TKey key) {
+            keyDeque.remove(key);
+            keyDeque.addLast(key);
+        }
+
+        @Override
+        public void recordKeyRemoval(TKey key) {
+            keyDeque.remove(key);
+        }
     }
 
     // ############################ BEGIN Helper Classes ############################
@@ -277,7 +381,9 @@ public class Solution {
     public static class SetAssociativeCacheFactory {
         /// NOTE: replacementAlgoName is provided in case you need it here. Whether you do will depend on your interface design.
         public static SetAssociativeCache<String, String> CreateStringCache(int setCount, int setSize, String replacementAlgoName) {
-            return new SetAssociativeCache<>(setCount, setSize);
+            IReplacementAlgo<String> replacementAlgo = new ReplacementAlgoFactory().createReplacementAlgo(replacementAlgoName);
+
+            return new SetAssociativeCache<>(setCount, setSize, replacementAlgo);
         }
 
         /// NOTE: Modify only if you change the main interface of SetAssociativeCache
@@ -307,9 +413,7 @@ public class Solution {
         }
     }
 
-    // TODO: Consider making use of this in the `SetAssociativeCacheFactory` above to map replacement algo name
-    // to a IReplacementAlgo instance for the interface you design
-    public class ReplacementAlgoFactory {
+    public static class ReplacementAlgoFactory {
         IReplacementAlgo createReplacementAlgo(String replacementAlgoName) {
             switch (replacementAlgoName) {
                 case LruAlgorithm:
@@ -322,6 +426,7 @@ public class Solution {
             }
         }
     }
+
 
 // ^^ ######################### END Helper Classes ######################### ^^
 

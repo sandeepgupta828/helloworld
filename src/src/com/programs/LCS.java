@@ -3,6 +3,11 @@ package com.programs;
 /**
  * Created by sagupta on 10/29/15.
  */
+
+/**
+ * algo:
+ * LCS(S1, S2) = LCS max(LCS(S1-1,S2), LCS(S1,S2-1)) + 1 if last characters of S1, S2 match
+ */
 public class LCS {
 
     public int solution(String s1, String s2) {
