@@ -129,7 +129,7 @@ N=4 (PTLM) : (1) LPTM / (2) TMLP, TLMP, TMPM, LTPM
                         indexPreTask = -1;
                     }
                     // we cannot insert this task in this order as pre task index is after post task
-                    if (!preTasks.isEmpty() && !postTasks.isEmpty() && indexPreTask > indexPostTask) continue;
+                    if (!preTasks.isEmpty() && !postTasks.isEmpty() && indexPreTask >= indexPostTask) continue;
 
                     // next figure all the new strings
 
@@ -155,6 +155,6 @@ N=4 (PTLM) : (1) LPTM / (2) TMLP, TLMP, TMPM, LTPM
 
     public static void main(String[] args) {
         FindTaskOrder findTaskOrder = new FindTaskOrder();
-        System.out.println(findTaskOrder.findOrder("PTML", Arrays.asList("TM","ML","MP","LP")));
+        System.out.println(findTaskOrder.findOrder("ABCD", Arrays.asList("AB","BA")));
     }
 }
