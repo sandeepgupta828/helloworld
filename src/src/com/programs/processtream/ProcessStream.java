@@ -1,5 +1,14 @@
 package com.programs.processtream;/*
 
+Given two sources that you read data from
+
+Write a processor that processes events from these 2 sources to compute difference in values and print it out
+if events match the criteria of being within a certain time distance
+
+Events are produced as:
+
+Source1: (t1, v1), (t2, v2) ....events are ordered by monotonically increasing time t
+Source2: (t1, v1), (t2, v2) ....events are ordered by monotonically increasing time t
 
 class Stream {
   public Tuple<double, int> get();
@@ -48,15 +57,14 @@ import javafx.util.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class ProcessStream {
 
-    private static final Long WINDOW_MS = 60000L;
-    private static final Long TIME_DISTANCE_WINDOW_MS = 5000L;
+    private static final Long SLIDING_WINDOW_MS = 4000L;
+    private static final Long TIME_DISTANCE_MS = 2000L;
 
     List<Pair<Long, Pair<Long, Integer>>> s1List = new ArrayList<>();
     List<Pair<Long, Pair<Long, Integer>>> s2List = new ArrayList<>();
@@ -64,84 +72,89 @@ public class ProcessStream {
     public static class Source {
         private String name;
         private Long lastTimestamp = System.currentTimeMillis();
+
         public Source(String name) {
             this.name = name;
         }
 
         public Pair<Long, Integer> get() throws InterruptedException {
             // some way to get the pair
-            Thread.sleep((long)Math.random()*5000);
-            return new Pair<Long, Integer>(lastTimestamp + (long)Math.random()*10*1000, (int)Math.random()*100);
+            lastTimestamp += (long) (Math.random() * 10) * 1000;
+            return new Pair(lastTimestamp, (int) (Math.random() * 100));
         }
     }
 
     synchronized public void cleanUpExpiredEntries(List<List<Pair<Long, Pair<Long, Integer>>>> sourceLists) {
         Long now = System.currentTimeMillis();
-        sourceLists.forEach( sourceList -> {
-            List<Pair<Long, Pair<Long, Integer>>> expiredEntries = sourceList.stream().filter(pair -> (now - pair.getKey()) > WINDOW_MS).collect(Collectors.toList());
+        sourceLists.forEach(sourceList -> {
+            List<Pair<Long, Pair<Long, Integer>>> expiredEntries = sourceList.stream().filter(pair -> (now - pair.getKey()) > SLIDING_WINDOW_MS).collect(Collectors.toList());
+            System.out.println("Removing from source: "+expiredEntries);
             sourceList.removeAll(expiredEntries);
         });
     }
 
     // thread run function.
-    public void readFromSource(Source s) {
+    public void readFromSource(Source source) {
         try {
-            Pair<Long, Integer> val = s.get(); // blocking call
-            processAsCallback(s, val);
+            Pair<Long, Integer> val = source.get(); // blocking call
+            //System.out.println("Source:"+source.name+":"+val.toString());
+            processAsCallback(source, val);
         } catch (Exception ex) {
             System.out.println(ex);
         }
     }
 
 
-    synchronized public void processAsCallback(Source s, Pair<Long, Integer> curPair) {
+    synchronized public void processAsCallback(Source source, Pair<Long, Integer> curPair) {
 
         // all the logic to process..
         Long now = System.currentTimeMillis();
-        if (s.name == "A") {
-            s1List.add(new Pair<>(now, curPair));
-            // scan s2 list for matching pair within T.
-            s2List.stream().forEach(val -> {
-                Pair<Long, Integer> pair = val.getValue();
-                if (Math.abs(pair.getKey() - pair.getKey()) <= TIME_DISTANCE_WINDOW_MS) {
-                    System.out.println("Matched:"+ pair + ", " + curPair + " "+Math.abs(pair.getValue() - curPair.getValue()));
-                }
-            });
+        List<Pair<Long, Pair<Long, Integer>>> sourceList = null;
+        List<Pair<Long, Pair<Long, Integer>>> otherSourceList = null;
+
+        switch (source.name) {
+            case "A":
+                sourceList = s1List;
+                otherSourceList = s2List;
+                break;
+            case "B":
+                sourceList = s2List;
+                otherSourceList = s1List;
+                break;
         }
 
-        //.. same logic for s2
-        if (s.name == "B") {
-            s2List.add(new Pair<>(now, curPair));
-            // scan s2 list for matching pair within T.
-            s1List.stream().forEach(val -> {
-                Pair<Long, Integer> pair = val.getValue();
-                if (Math.abs(pair.getKey() - pair.getKey()) <= TIME_DISTANCE_WINDOW_MS) {
-                    System.out.println("Matched:"+ pair + ", " + curPair + " "+Math.abs(pair.getValue() - curPair.getValue()));
-                }
-            });
-        }
+        sourceList.add(new Pair<>(now, curPair));
+        otherSourceList.stream().forEach(val -> {
+            Pair<Long, Integer> pair = val.getValue();
+            if (Math.abs(pair.getKey() - curPair.getKey()) <= TIME_DISTANCE_MS) {
+                System.out.println("Matched:"+source.name+":" + curPair.toString() + ", " + pair.toString() + " " + Math.abs(pair.getValue() - curPair.getValue()));
+            }
+        });
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
 
-        // S1 & S2.
+        // create S1 & S2.
         Source s1 = new Source("A");
         Source s2 = new Source("B");
 
 
         ProcessStream processStream = new ProcessStream();
 
-        Thread readS1 = new Thread( () -> processStream.readFromSource(s1));
-        Thread readS2 = new Thread( () -> processStream.readFromSource(s2));
-        readS1.start();
-        readS2.start();
+        // source reader 1 (reading from source1 every sec)
+        ScheduledThreadPoolExecutor sourceReader1Executor = new ScheduledThreadPoolExecutor(1);
+        sourceReader1Executor.scheduleAtFixedRate(() -> processStream.readFromSource(s1), 0, 1, TimeUnit.SECONDS);
 
-        // timer thread
+        // source reader 2 (reading from source2 every sec)
+        ScheduledThreadPoolExecutor sourceReader2Executor = new ScheduledThreadPoolExecutor(1);
+        sourceReader2Executor.scheduleAtFixedRate(() -> processStream.readFromSource(s2), 0, 1, TimeUnit.SECONDS);
+
+        // timer thread to expire entries every sec
         List<List<Pair<Long, Pair<Long, Integer>>>> sourceLists = new ArrayList<>();
         sourceLists.add(processStream.s1List);
         sourceLists.add(processStream.s2List);
-        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
-        executor.scheduleAtFixedRate(() -> processStream.cleanUpExpiredEntries(sourceLists), 1, 10, TimeUnit.SECONDS);
+        ScheduledThreadPoolExecutor timerExecutor = new ScheduledThreadPoolExecutor(1);
+        timerExecutor.scheduleAtFixedRate(() -> processStream.cleanUpExpiredEntries(sourceLists), 0, 1, TimeUnit.SECONDS);
 
     }
 
