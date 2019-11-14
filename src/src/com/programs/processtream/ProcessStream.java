@@ -2,6 +2,8 @@ package com.programs.processtream;/*
 
 Given two sources that you read data from
 
+Reading data from sources is blocking call.
+
 Write a processor that processes events from these 2 sources to compute difference in values and print it out
 if events match the criteria of being within a certain time distance
 
@@ -61,6 +63,12 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+/**
+ * Read data from 2 sources in parallel
+ * As data is available process it
+ * processing is synchronized
+ * Data events are not kept forever, but within a configurable sliding window within which events enter at an IN time, and are removed when the time had advanced to IN+WindowLen
+ */
 public class ProcessStream {
 
     private static final Long SLIDING_WINDOW_MS = 4000L;
