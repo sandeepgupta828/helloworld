@@ -69,14 +69,14 @@ public class FindAllPalins {
                     addPalindrome(priorityQueue, i, i);
                     isPalindromeAtLastCh = false;
                 } else {
-                    if (i > 0 && (i - 1) > endIndexOfLastPalindrome && charArr[i - 1] == ch) {
+                    if (i > 0 && charArr[i - 1] == ch) {
                         // this ch starts a new palindrome (even length >= 2)
                         startIndexOfLastPalindrome = i - 1;
                         endIndexOfLastPalindrome = i;
                         isPalindromeAtLastCh = true;
                         isCharRepeated = true;
                         repeatedChar = ch;
-                    } else if (i > 1 && (i - 2) > endIndexOfLastPalindrome && charArr[i - 2] == ch) {
+                    } else if (i > 1 && charArr[i - 2] == ch) {
                         // this ch starts a new palindrome (odd length >= 3)
                         startIndexOfLastPalindrome = i - 2;
                         endIndexOfLastPalindrome = i;
@@ -86,16 +86,16 @@ public class FindAllPalins {
                             repeatedChar = ch;
                         }
                     } else {
+                        // this ch starts a new palindrome length == 1
                         addPalindrome(priorityQueue, i, i);
                     }
                 }
             }
-            // handle the last palindrome match
-            if (isPalindromeAtLastCh) {
-                addPalindrome(priorityQueue, startIndexOfLastPalindrome, endIndexOfLastPalindrome);
-            }
         }
-
+        // handle the last palindrome match
+        if (isPalindromeAtLastCh) {
+            addPalindrome(priorityQueue, startIndexOfLastPalindrome, endIndexOfLastPalindrome);
+        }
         priorityQueue.stream().forEach(palindrome -> result.add(input.substring(palindrome.start, palindrome.end+1)));
         return result;
     }
@@ -107,7 +107,7 @@ public class FindAllPalins {
     }
 
     public static void main(String[] args) {
-        System.out.println(getAllPalindromes("racecarorac"));
+        System.out.println(getAllPalindromes("racecarannakayak"));
     }
 }
 
