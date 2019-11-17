@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.PriorityQueue;
 import java.util.stream.Collectors;
 
+import static com.programs.palindromes.FindMinSpanningIntervals.*;
+import static com.programs.palindromes.FindMinSpanningIntervals.findMinSpanningInterval;
+
 /**
  * Given a string, split it into as few strings as possible
  * such that each string is a palindrome.
@@ -96,7 +99,14 @@ public class FindAllPalins {
         if (isPalindromeAtLastCh) {
             addPalindrome(priorityQueue, startIndexOfLastPalindrome, endIndexOfLastPalindrome);
         }
-        priorityQueue.stream().forEach(palindrome -> result.add(input.substring(palindrome.start, palindrome.end+1)));
+        List<Interval> intervalList = new ArrayList<>();
+
+        //priorityQueue.stream().forEach(palindrome -> result.add(input.substring(palindrome.start, palindrome.end+1)));
+
+        priorityQueue.stream().forEach(palindrome -> intervalList.add(new Interval(palindrome.start, palindrome.end)));
+        List<Interval> minIntervalList = findMinSpanningInterval(new Interval(0, input.length()-1), intervalList);
+        minIntervalList.stream().forEach(minInterval -> result.add(input.substring(minInterval.start, minInterval.end+1)));
+
         return result;
     }
 
@@ -107,7 +117,7 @@ public class FindAllPalins {
     }
 
     public static void main(String[] args) {
-        System.out.println(getAllPalindromes("racecarannakayak"));
+        System.out.println(getAllPalindromes("aaaxxxbbbxxxccxxxbbb"));
     }
 }
 
