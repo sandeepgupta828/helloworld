@@ -11,10 +11,10 @@ import static com.programs.palindromes.FindMinSpanningIntervals.findMinSpanningI
 /**
  * Given a string, split it into as few strings as possible
  * such that each string is a palindrome.
- *
+ * <p>
  * For example, given the input string racecarannakayak,
  * return ["racecar", "anna", "kayak"].
- *
+ * <p>
  * Given the input string abc, return ["a", "b", "c"].
  */
 
@@ -44,54 +44,52 @@ public class FindAllPalins {
     public static List<String> getAllPalindromes(String input) {
 
         List<String> result = new ArrayList<>();
-        PriorityQueue<Palindrome> priorityQueue = new PriorityQueue<>((p1, p2) -> (p2.end-p2.start) - (p1.end -p1.start));
+        PriorityQueue<Palindrome> priorityQueue = new PriorityQueue<>((p1, p2) -> (p2.end - p2.start) - (p1.end - p1.start));
 
         char[] charArr = input.toCharArray();
 
         boolean isPalindromeAtLastCh = false;
         int startIndexOfLastPalindrome = -1;
         int endIndexOfLastPalindrome = -1;
-        boolean isCharRepeated =false;
+        boolean isCharRepeated = false;
         char repeatedChar = 0;
-        for (int i=0; i<charArr.length;i++) {
+        for (int i = 0; i < charArr.length; i++) {
             char ch = charArr[i];
-            if (isPalindromeAtLastCh && (startIndexOfLastPalindrome -1) >= 0 && charArr[startIndexOfLastPalindrome-1] == ch) {
+            if (isPalindromeAtLastCh && (startIndexOfLastPalindrome - 1) >= 0 && charArr[startIndexOfLastPalindrome - 1] == ch) {
                 // this ch extends the palindrome that exists at last ch
-                startIndexOfLastPalindrome = startIndexOfLastPalindrome -1;
+                startIndexOfLastPalindrome = startIndexOfLastPalindrome - 1;
                 endIndexOfLastPalindrome = i;
                 isPalindromeAtLastCh = true;
                 if (isCharRepeated && ch != repeatedChar) {
                     isCharRepeated = false;
                 }
+                addPalindrome(priorityQueue, startIndexOfLastPalindrome, endIndexOfLastPalindrome);
             } else if (isPalindromeAtLastCh && isCharRepeated && charArr[startIndexOfLastPalindrome] == ch) {
                 endIndexOfLastPalindrome = i;
                 isPalindromeAtLastCh = true;
+                addPalindrome(priorityQueue, startIndexOfLastPalindrome, endIndexOfLastPalindrome);
             } else {
-                if (isPalindromeAtLastCh) {
-                    addPalindrome(priorityQueue, startIndexOfLastPalindrome, endIndexOfLastPalindrome);
-                    addPalindrome(priorityQueue, i, i);
-                    isPalindromeAtLastCh = false;
-                } else {
-                    if (i > 0 && charArr[i - 1] == ch) {
-                        // this ch starts a new palindrome (even length >= 2)
-                        startIndexOfLastPalindrome = i - 1;
-                        endIndexOfLastPalindrome = i;
-                        isPalindromeAtLastCh = true;
+                if (i > 0 && charArr[i - 1] == ch) {
+                    // this ch starts a new palindrome (even length >= 2)
+                    startIndexOfLastPalindrome = i - 1;
+                    endIndexOfLastPalindrome = i;
+                    isPalindromeAtLastCh = true;
+                    isCharRepeated = true;
+                    repeatedChar = ch;
+                    addPalindrome(priorityQueue, i - 1, i);
+                } else if (i > 1 && charArr[i - 2] == ch) {
+                    // this ch starts a new palindrome (odd length >= 3)
+                    startIndexOfLastPalindrome = i - 2;
+                    endIndexOfLastPalindrome = i;
+                    isPalindromeAtLastCh = true;
+                    if (charArr[i - 1] == ch) {
                         isCharRepeated = true;
                         repeatedChar = ch;
-                    } else if (i > 1 && charArr[i - 2] == ch) {
-                        // this ch starts a new palindrome (odd length >= 3)
-                        startIndexOfLastPalindrome = i - 2;
-                        endIndexOfLastPalindrome = i;
-                        isPalindromeAtLastCh = true;
-                        if (charArr[i-1] == ch) {
-                            isCharRepeated = true;
-                            repeatedChar = ch;
-                        }
-                    } else {
-                        // this ch starts a new palindrome length == 1
-                        addPalindrome(priorityQueue, i, i);
                     }
+                    addPalindrome(priorityQueue, i - 2, i);
+                } else {
+                    // this ch starts a new palindrome length == 1
+                    addPalindrome(priorityQueue, i, i);
                 }
             }
         }
@@ -103,21 +101,34 @@ public class FindAllPalins {
 
         //priorityQueue.stream().forEach(palindrome -> result.add(input.substring(palindrome.start, palindrome.end+1)));
 
+
         priorityQueue.stream().forEach(palindrome -> intervalList.add(new Interval(palindrome.start, palindrome.end)));
-        List<Interval> minIntervalList = findMinSpanningInterval(new Interval(0, input.length()-1), intervalList);
-        minIntervalList.stream().forEach(minInterval -> result.add(input.substring(minInterval.start, minInterval.end+1)));
+        Integer[] minIntervalArr = findMinSpanningInterval(new Interval(0, input.length() - 1), intervalList);
+        List<Interval> minIntervalList = new ArrayList<>();
+        int indexOfLastIntervalChange = 0;
+        for (int p=0;p<minIntervalArr.length;p++) {
+            if (p > 0 && (minIntervalArr[p-1] < minIntervalArr[p])) {
+                minIntervalList.add(new Interval(indexOfLastIntervalChange, p));
+                indexOfLastIntervalChange = p;
+            }
+        }
+        if (indexOfLastIntervalChange < minIntervalArr.length-1) {
+            minIntervalList.add(new Interval(indexOfLastIntervalChange, minIntervalArr.length-1));
+        }
+
+        minIntervalList.stream().forEach(minInterval -> result.add(input.substring(minInterval.start, minInterval.end + 1)));
 
         return result;
     }
 
     private static void addPalindrome(PriorityQueue<Palindrome> priorityQueue, int startIndexOfLastPalindrome, int endIndexOfLastPalindrome) {
         Palindrome pal = new Palindrome(startIndexOfLastPalindrome, endIndexOfLastPalindrome);
-        priorityQueue.removeAll(priorityQueue.stream().filter(palindrome -> pal.contains(palindrome)).collect(Collectors.toList()));
+        //priorityQueue.removeAll(priorityQueue.stream().filter(palindrome -> pal.contains(palindrome)).collect(Collectors.toList()));
         priorityQueue.add(pal);
     }
 
     public static void main(String[] args) {
-        System.out.println(getAllPalindromes("aaaxxxbbbxxxccxxxbbb"));
+        System.out.println(getAllPalindromes("gabcxcbagfifgab"));
     }
 }
 

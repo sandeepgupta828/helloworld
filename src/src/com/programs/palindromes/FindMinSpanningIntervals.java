@@ -1,6 +1,9 @@
 package com.programs.palindromes;
 
+import javafx.util.Pair;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.PriorityQueue;
 
@@ -28,88 +31,89 @@ public class FindMinSpanningIntervals {
         }
     }
 
-    public static List<Interval> findMinSpanningInterval(Interval totalSpan, List<Interval> spans) {
-        List<Interval>[] intervalListArr = new List[spans.size()];
-        PriorityQueue<List<Interval>> priorityQueue = new PriorityQueue<List<Interval>>(((list1, list2) -> list1.size() - list2.size()));
+    public static Integer[] findMinSpanningInterval(Interval totalSpan, List<Interval> spans) {
+        int totalSpanLength = totalSpan.end - totalSpan.start + 1;
+        Integer[][] intervalArr = new Integer[spans.size()][totalSpanLength];
+        PriorityQueue<Integer[]> priorityQueue = new PriorityQueue<Integer[]>((ar1, ar2) -> ar1[ar1.length - 1] - ar2[ar2.length - 1]);
         if (spans == null || spans.isEmpty()) {
-            List<Interval> intervalList = new ArrayList<Interval>();
-            addIntervals(totalSpan, null, intervalList);
-            priorityQueue.add(intervalList);
+            Integer[] intervalIndex = new Integer[totalSpan.end - totalSpan.start + 1];
+            addIntervalIndexes(totalSpan, null, intervalIndex);
         }
         for (int i = 0; i < spans.size(); i++) {
-            intervalListArr[i] = new ArrayList<Interval>();
+            Interval thisInterval = spans.get(i);
             if (i == 0) {
                 // if this is first span
-                addIntervals(totalSpan, spans.get(i), intervalListArr[i]);
+                addIntervalIndexes(totalSpan, thisInterval, intervalArr[i]);
             } else {
-                // look at intervals of a previous span that doesn't overlap with this span
-                int scanIntervalsIndex = i - 1;
-                while (scanIntervalsIndex >= 0) {
-                    if (!spans.get(i).overlap(spans.get(scanIntervalsIndex))) {
-                        break;
+                PriorityQueue<Pair<Integer[], Integer>> priorityQueueMin = new PriorityQueue<Pair<Integer[], Integer>>((p1, p2) -> (p1.getKey()[p1.getValue()] - p1.getKey()[0]) - (p2.getKey()[p2.getValue()] - p2.getKey()[0]));
+                PriorityQueue<Pair<Integer[], Integer>> priorityQueueMax = new PriorityQueue<Pair<Integer[], Integer>>((p1, p2) -> (p1.getKey()[p1.getKey().length - 1] - p1.getKey()[p1.getValue()]) - (p2.getKey()[p2.getKey().length - 1] - p2.getKey()[p2.getValue()]));
+                for (int k = 0; k < i; k++) {
+                    Integer[] prevIntervalIndex = intervalArr[k];
+                    if (thisInterval.start > totalSpan.start && prevIntervalIndex[thisInterval.start] > prevIntervalIndex[thisInterval.start - 1]) {
+                        priorityQueueMin.add(new Pair<Integer[], Integer>(prevIntervalIndex, thisInterval.start - 1 - totalSpan.start));
                     }
-                    scanIntervalsIndex--;
+                    if (thisInterval.end < totalSpan.end && prevIntervalIndex[thisInterval.end + 1] > prevIntervalIndex[thisInterval.end]) {
+                        priorityQueueMax.add(new Pair<Integer[], Integer>(prevIntervalIndex, thisInterval.end + 1 - totalSpan.start));
+                    }
                 }
-                if (scanIntervalsIndex >= 0) {
-                    List<Interval> intervalList = intervalListArr[scanIntervalsIndex];
-                    boolean added = false;
-
-                    List<Interval> newList = new ArrayList<>();
-
-                    for (int k = 0; k < intervalList.size(); k++) {
-                        if (!spans.get(i).overlap(intervalList.get(k))) {
-                            newList.add(intervalList.get(k));
-                        } else if (!added) {
-                            newList.add(spans.get(i));
-                            added = true;
-                        } else {
-                            continue;
-                        }
-                    }
-                    //
-                    List<Interval> finalList = new ArrayList<>();
-                    Interval firstInterval = newList.get(0);
-                    if (firstInterval.start > totalSpan.start) {
-                        addIntervals(new Interval(totalSpan.start, firstInterval.start-1), null, finalList);
-                    }
-                    for (int h=0;h<newList.size();h++) {
-                        Interval interval = newList.get(h);
-                        finalList.add(interval);
-                        if ((h+1) <newList.size()) {
-                            Interval nextInterval = newList.get(h + 1);
-                            if ((nextInterval.start - interval.end) > 1) {
-                                addIntervals(new Interval(interval.end+1, nextInterval.start-1), null, finalList);
-                            }
-                        }
-                    }
-                    if (newList.size() > 0) {
-                        Interval lastInterval = newList.get(newList.size()-1);
-                        if (lastInterval.end < totalSpan.end) {
-                            addIntervals(new Interval(lastInterval.end+1, totalSpan.end), null, finalList);
-                        }
-                    }
-                    intervalListArr[i] = finalList;
+                int startInterval = 0;
+                if (priorityQueueMin.size() > 0) {
+                    Pair<Integer[], Integer> pair = priorityQueueMin.peek();
+                    Integer[] minInterval = pair.getKey();
+                    System.arraycopy(minInterval, 0, intervalArr[i], 0, pair.getValue() + 1);
+                    startInterval = intervalArr[i][pair.getValue()];
                 } else {
-                    addIntervals(totalSpan, spans.get(i), intervalListArr[i]);
+                    for (int k = 0; k < (thisInterval.start - totalSpan.start); k++) {
+                        intervalArr[i][k] = ++startInterval;
+                    }
+                }
+                ++startInterval;
+                for (int k = (thisInterval.start - totalSpan.start); k <= (thisInterval.end - totalSpan.start); k++) {
+                    intervalArr[i][k] = startInterval;
+                }
+                if (priorityQueueMax.size() > 0) {
+                    Integer[] maxInterval = priorityQueueMax.peek().getKey();
+                    Pair<Integer[], Integer> pair = priorityQueueMax.peek();
+                    System.arraycopy(maxInterval, pair.getValue(), intervalArr[i], pair.getValue(), totalSpanLength - pair.getValue());
+                    int lastVal = intervalArr[i][pair.getValue()];
+                    intervalArr[i][pair.getValue()] = ++startInterval;
+                    for (int j = pair.getValue() + 1; j < totalSpanLength; j++) {
+                        // compare it to the last one
+                        if (intervalArr[i][j] == lastVal) {
+                            lastVal = intervalArr[i][j];
+                            intervalArr[i][j] = startInterval;
+                        } else {
+                            lastVal = intervalArr[i][j];
+                            intervalArr[i][j] = ++startInterval;
+                        }
+                    }
+                } else {
+                    for (int k = (thisInterval.end + 1 - totalSpan.start); k < totalSpanLength; k++) {
+                        intervalArr[i][k] = ++startInterval;
+                    }
                 }
             }
-            priorityQueue.add(intervalListArr[i]);
+            priorityQueue.add(intervalArr[i]);
         }
         return priorityQueue.peek();
     }
 
-    private static void addIntervals(Interval totalSpan, Interval interval, List<Interval> intervals) {
+    private static void addIntervalIndexes(Interval totalSpan, Interval interval, Integer[] intervalIndex) {
+        int startInterval = 0;
         if (interval != null) {
-            for (int k = totalSpan.start; k < interval.start; k++) {
-                intervals.add(new Interval(k, k));
+            for (int k = 0; k < (interval.start - totalSpan.start); k++) {
+                intervalIndex[k] = ++startInterval;
             }
-            intervals.add(interval);
-            for (int k = (interval.end + 1); k <= totalSpan.end; k++) {
-                intervals.add(new Interval(k, k));
+            ++startInterval;
+            for (int k = (interval.start - totalSpan.start); k <= (interval.end - totalSpan.start); k++) {
+                intervalIndex[k] = startInterval;
+            }
+            for (int k = (interval.end + 1 - totalSpan.start); k <= (totalSpan.end - totalSpan.start); k++) {
+                intervalIndex[k] = ++startInterval;
             }
         } else {
-            for (int k = totalSpan.start; k <= totalSpan.end; k++) {
-                intervals.add(new Interval(k, k));
+            for (int k = 0; k <= (totalSpan.end - totalSpan.start); k++) {
+                intervalIndex[k] = ++startInterval;
             }
         }
     }
@@ -127,8 +131,10 @@ public class FindMinSpanningIntervals {
 
          */
         spanList.add(new Interval(6, 19));
+        spanList.add(new Interval(1, 17));
         spanList.add(new Interval(0, 2));
-        spanList.add(new Interval(3, 11));
-        System.out.println(findMinSpanningInterval(new Interval(0, 19), spanList));
+        spanList.add(new Interval(0, 19));
+
+        System.out.println(Arrays.asList(findMinSpanningInterval(new Interval(0, 19), spanList)));
     }
 }
