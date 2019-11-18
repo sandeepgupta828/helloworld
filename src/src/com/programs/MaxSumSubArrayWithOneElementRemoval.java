@@ -1,5 +1,5 @@
 package com.programs;
 
-public class MaxSumSubArrayWithOneElementRemoval {
+public class    MaxSumSubArrayWithOneElementRemoval {
     
 }

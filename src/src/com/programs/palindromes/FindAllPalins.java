@@ -108,11 +108,11 @@ public class FindAllPalins {
         int indexOfLastIntervalChange = 0;
         for (int p=0;p<minIntervalArr.length;p++) {
             if (p > 0 && (minIntervalArr[p-1] < minIntervalArr[p])) {
-                minIntervalList.add(new Interval(indexOfLastIntervalChange, p));
+                minIntervalList.add(new Interval(indexOfLastIntervalChange, p-1));
                 indexOfLastIntervalChange = p;
             }
         }
-        if (indexOfLastIntervalChange < minIntervalArr.length-1) {
+        if (indexOfLastIntervalChange <= minIntervalArr.length-1) {
             minIntervalList.add(new Interval(indexOfLastIntervalChange, minIntervalArr.length-1));
         }
 
@@ -128,7 +128,7 @@ public class FindAllPalins {
     }
 
     public static void main(String[] args) {
-        System.out.println(getAllPalindromes("gabcxcbagfifgab"));
+        System.out.println(getAllPalindromes("hawahawahxixha"));
     }
 }
 
