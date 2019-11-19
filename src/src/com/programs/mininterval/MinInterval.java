@@ -43,12 +43,12 @@ public class MinInterval {
             if (wasPresent == null || !wasPresent) {
                 isArrPresent.put(entry.arId, true);
             } else {
-                while (entryList.get(start).arId == entry.arId) start++;
+                while (start < i && entryList.get(start).arId == entry.arId) start++;
             }
             if (isArrPresent.size() == listOfArrays.size()) { // window is complete
                 // entries from all arrays are seen, now we have an interval where all arrays have entries i.e. [start, i]
                 // we update min indexes to track minimum such interval
-                if ((minStart < 0 && minEnd < 0) || (minStart > 0 && minEnd > 0 && (minEnd - minStart) > (i - start))) {
+                if ((minStart < 0 && minEnd < 0) || (minStart >= 0 && minEnd >= 0 && (entryList.get(minEnd).val - entryList.get(minStart).val) > (entryList.get(i).val - entryList.get(start).val))) {
                     minStart = start;
                     minEnd = i;
                 }
@@ -62,9 +62,9 @@ public class MinInterval {
     public static void main(String[] args) {
         List<List<Integer>> listOfArrays = new ArrayList<>();
         listOfArrays.add(Arrays.asList(new Integer[]{5, 7, 8, 19}));
-        listOfArrays.add(Arrays.asList(new Integer[]{8, 17, 18, 30}));
+        listOfArrays.add(Arrays.asList(new Integer[]{6, 17, 18, 30}));
         listOfArrays.add(Arrays.asList(new Integer[]{1, 9, 22}));
-        listOfArrays.add(Arrays.asList(new Integer[]{9, 14, 20, 27}));
+        //listOfArrays.add(Arrays.asList(new Integer[]{9, 14, 20, 27}));
 
         System.out.println(findMinInterval(listOfArrays));
     }
