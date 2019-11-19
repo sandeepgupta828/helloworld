@@ -36,8 +36,6 @@ public class MinInterval {
         int minEnd = -1;
 
         Map<String, Boolean> isArrPresent = new HashMap<>();
-        // priority queue to provide min index seen so far
-        PriorityQueue<Entry> priorityQueue = new PriorityQueue<>((e1, e2) -> e1.val - e2.val);
 
         for (int i = 0; i < entryList.size(); i++) {
             Entry entry = entryList.get(i);
@@ -45,22 +43,8 @@ public class MinInterval {
             if (wasPresent == null || !wasPresent) {
                 isArrPresent.put(entry.arId, true);
             } else {
-                // check if min index seen so far is from same array id
-                // if yes, we can move the window forward
-                Entry minIndexEntry = priorityQueue.peek();
-                if (minIndexEntry.arId == entry.arId) {
-                    // we can move the window forward
-                    // remove the previous min entry
-                    priorityQueue.poll();
-                    // now some new entry becomes min entry and index of that entry is now window start
-                    if (priorityQueue.size() > 0) {
-                        start = priorityQueue.peek().val;
-                    } else {
-                        start = i;
-                    }
-                }
+                while (entryList.get(start).arId == entry.arId) start++;
             }
-            priorityQueue.add(new Entry(entry.arId, i));
             if (isArrPresent.size() == listOfArrays.size()) { // window is complete
                 // entries from all arrays are seen, now we have an interval where all arrays have entries i.e. [start, i]
                 // we update min indexes to track minimum such interval
@@ -78,7 +62,7 @@ public class MinInterval {
     public static void main(String[] args) {
         List<List<Integer>> listOfArrays = new ArrayList<>();
         listOfArrays.add(Arrays.asList(new Integer[]{5, 7, 8, 19}));
-        listOfArrays.add(Arrays.asList(new Integer[]{10, 17, 18, 30}));
+        listOfArrays.add(Arrays.asList(new Integer[]{8, 17, 18, 30}));
         listOfArrays.add(Arrays.asList(new Integer[]{1, 9, 22}));
         listOfArrays.add(Arrays.asList(new Integer[]{9, 14, 20, 27}));
 
