@@ -8,14 +8,14 @@ import java.util.*;
  * Avoid reading the entire file in memory, and minimize on memory overhead.
  * Optimize on buffer memory used to fetch data from file
  *
- * The approach is to keep 2 buffers, with each buffer size of byte array to be searched
- * The drawback is that there could be lot of IO if buffer size is small. This could be prevented by reading a larger chunk (multiple of buffer size)of file
- * and then reading the 2 buffers off those chunk
+ * The approach is to keep 2 buffers. The buffer size is size of byte array to be searched. This keeps the search optimal.
+ * However the drawback is that there could be lot of disk IO if byte array size is small. This could be prevented by reading a larger chunk (multiple of buffer size)of file
+ * and then reading the 2 buffers off the chunk
  *
  *
- * we read the file as sequence of equal sized memory buffers until file ends
- * we need at least 2 buffers to be able to search for byte array we do the comparison in a sliding window fashion
- * we move a sliding window of size of buffer from B1-B2, once done with B1 we swap B2-B1, with fresh bytes read into B1
+ * we read the file as sequence of equal sized memory chunk/buffers until file ends
+ * search for byte array is done via comparison in a sliding window fashion across buffers
+ * we move a sliding window of size of byte array from B1-B2, once done with B1 we swap B2-B1, with fresh bytes read into B1
  */
 
 class FindByteArray {
