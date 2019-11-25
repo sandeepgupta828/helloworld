@@ -1,0 +1,98 @@
+package com.programs.searchword;
+/* Given two sentences, each represented as array of words (words1 and words2) and list of similar word pairs (pairs), determine if two sentences are similar.
+
+Example:
+   Input:
+    words1 = ["great", "acting", "skills"]
+    words2 = ["fine", "drama", "talent"]
+    pairs = [["great", "good"], ["fine", "good"], ["acting","drama"], ["skills","talent"]]\
+
+    [["great", "good"] ["good", "fine"]
+
+   Output
+     True
+
+     great -> good -> fine
+     good -> great, fine
+     fine -> good
+ */
+
+public class Solution {
+    public static void main(String args[] ) throws Exception {
+        System.out.println("Hello World");
+    }
+
+    public boolean isSimilar(String[] words1, String[] words2, String[][] pairs) {
+        Hashtable<String, String> ht = setupPairTable(pairs);
+
+        for(int i = 0; i < words1.length; i++) {
+            String wordOne = words1[i];
+            String wordtwo = words2[i];
+
+            if (wordOne != wordTwo) {
+                Set<String> subsetSynonyms = ht.get(wordOne);
+                LinkedList<String> queue = new LinkedList<String>();
+                for (String synonym: subSetSynonyms) {
+                    queue.add(synonym);
+                }
+                Set<String> allSynonyms = getAllSynonyms(ht, queue, new Set<String>());
+
+                if (!allSynonyms.includes(wordTwo)){
+                    return false;
+                }
+
+            }
+        }
+
+
+        return true;
+    }
+
+
+    // good -> great, fine
+    // great -> fine, good
+    public Set<String> getAllSynonyms(Hashtable<String,Set<String>> ht, LinkedList<String> queue, new Set<String> seenWords) {
+
+        try {
+            String word = queue.remove();
+
+            if (seenWords.includes(word)) {
+                return getAllSynonyms(ht, queue, seenWords);
+            }
+
+            Set<String> curWordsSynonyms = ht.get(word);
+            seenWords.add(word);
+            queue.addAll(curWordsSynonyms);
+            return getAllSynonyms(ht, queue, seenWords);
+
+        } catch (NoElementFoundException ex) {
+            return;
+        }
+    }
+
+
+
+    public HashTable<String, String> setupPairTable(String[][] pairs) {
+        Hashtable<String, Set<String>> ht = new HashTable<String, Set<String>>();
+
+        for (int i = 0; i < pairs.length; i++) {
+            createOrAppendPairSet(ht, pair[0], pair[1]);
+            createOrAppendPairSet(ht, pair[1], pair[0]);
+        }
+
+        return ht;
+    }
+
+    public void createOrAppendPairSet(Hashtable<String, Set<String>> ht, String pairOne, String pairTwo) {
+        Set<String> pairSet;
+
+        if (pairSet != null) {
+            pairSet = ht.get(pairOne);
+        } else {
+            Set<String> pairSet = new Set<String>();
+        }
+
+        pairSet.add(pairTwo)
+        ht.set(pairOne, pairSet);
+    }
+}

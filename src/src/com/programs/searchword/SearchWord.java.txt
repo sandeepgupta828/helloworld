@@ -1,0 +1,113 @@
+package com.programs.searchword;
+
+/*
+Design a data structure which supports two operations:
+
+   void add(String word)
+   boolean search(String word)
+
+ 'search()' can search a literal word or a subset of regular expression.
+ 'word' contains only letters a-z or '.' it can represent any one letter.
+
+ Examples:
+
+add("bad")
+add("dad")
+add("mad")
+search("pad") -> false
+search("bad") -> true
+search(".ad") -> true
+search("b..") -> true
+
+a.b.c
+
+hashset:
+
+1)word1 --> does it match the pattern?
+2)word2
+
+
+n)wordn
+
+trie
+
+a->o-->d
+b-->a--->(t)(e)-->(d)(e)
+..
+z->
+ */
+
+
+public class Search {
+
+    private Node root;
+
+    public Search() {
+
+        root = new Node();
+        root.ch = 0;
+        root.nextNodes;
+
+        // init all nextNodes...
+
+    }
+
+    public static class Node {
+        char ch;
+        boolean isTerminal;
+        List<Node> nextNodes;
+    }
+
+    public void add(String word) {
+        // iterate over word characters and dynamically add Nodes and mark last node has terminal (if needed at all)
+
+        insert(root, word);
+    /*
+    for (int i=0;i<word.length;i++) {
+        char ch = word.charAt(i);
+
+    }
+    */
+
+
+    }
+
+    private insert(root, word) {
+        // check if this tree root..it cannot match, so move on to children
+        // check if any chid matches on word's first char--> if yes, recurse on insert(existingchild, word.substr(1)
+        // if no child matches then add a child with word's first char and then recurse on insert(newChid, word.substr(1))
+
+        char firstChar = word.charAt(0);
+        if (root.nextNodes != null) {
+            // figure matching node
+            Optional<Node> childNode = root.nextNodes.stream().findAny(node -> node.ch == firstChar);
+            if (childNode.isPresent()) {
+                if (word.length > 1) {
+                    insert(childNode, word.substr(1))
+                } else {
+                    childNode.isTerminal = true;
+                }
+            }
+        } else {
+            root.nextNodes = new ArrayList<>();
+            Node newNode = new Node();
+            newNode.ch = firstChar;
+            root.nextNodes.add(newNode);
+            if (word.length > 1) {
+                insert(newNode, word.substr(1))
+            } else {
+                newNode.isTerminal = true;
+            }
+        }
+    }
+
+    public boolean search(String word) {
+
+    }
+
+
+
+}
+
+
+}
