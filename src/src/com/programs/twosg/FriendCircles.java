@@ -13,7 +13,7 @@ public class FriendCircles {
         List<Student> friends = new ArrayList<>();
     }
 
-    public static int friendCircles(List<String> friends) {
+    public static Set<Set<Integer>> friendCircles(List<String> friends) {
         char[][] friendMatrix = new char[friends.size()][];
         for (int i=0;i<friends.size();i++) {
             if (friends.get(i).length() != friends.size()) {
@@ -56,9 +56,10 @@ public class FriendCircles {
                 // if this student is not already part of any existing circle
                 Set<Integer> friendIds = getAndMarkFriendsForStudent(idToStudentMap.get(i), nextCircleId);
                 friendCircles.add(friendIds);
+                nextCircleId++;
             }
         }
-        return friendCircles.size();
+        return friendCircles;
     }
 
     private static Set<Integer> getAndMarkFriendsForStudent(Student student, Integer circleId) {
@@ -75,9 +76,9 @@ public class FriendCircles {
 
     public static void main(String[] args) throws Exception {
         List<String> friendList = new ArrayList<>();
-        friendList.add("YNNY");
+        friendList.add("YNYY");
         friendList.add("NYNN");
-        friendList.add("NNYN");
+        friendList.add("YNYN");
         friendList.add("YNNY");
 
         System.out.println(friendCircles(friendList));
