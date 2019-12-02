@@ -7,6 +7,11 @@ import java.util.*;
 public class CopyDirectedGraph {
 
     public static class Node {
+        public Node(Integer value) {
+            this.value = value;
+            this.outGoing = new ArrayList<>();
+        }
+
         Integer value;
         List<Node> outGoing;
 
@@ -15,13 +20,12 @@ public class CopyDirectedGraph {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Node node = (Node) o;
-            return value.equals(node.value) &&
-                    outGoing.equals(node.outGoing);
+            return value.equals(node.value);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(value, outGoing);
+            return Objects.hash(value);
         }
     }
 
@@ -39,8 +43,7 @@ public class CopyDirectedGraph {
      * @return
      */
     public Node copy(Node givenNode) {
-        Node copiedNode = new Node();
-        copiedNode.value = givenNode.value;
+        Node copiedNode = new Node(givenNode.value);
         mapNodeToCopiedNode.put(givenNode, copiedNode);
         if (givenNode.outGoing != null && givenNode.outGoing.size() > 0) {
             copiedNode.outGoing = new ArrayList<>(givenNode.outGoing.size());
@@ -57,7 +60,48 @@ public class CopyDirectedGraph {
         return copiedNode;
     }
 
-    public static void main(String[] args) {
+    public Node createGraph(int numberNodes, int numEdges) {
+        Map<Integer, Node> valueToNodeMap = new HashMap<>();
+        // create nodes
+        for (int i=0;i<numberNodes;i++) {
+            valueToNodeMap.put(i+1, new Node(i+1));
+        }
+        Random random = new Random();
+        // create edges
+        while (numEdges > 0) {
+            // pick a random source node
+            int srcNode = random.nextInt(numberNodes)+1;
+            // pick a random target node
+            int targetNode;
+            while((targetNode = (random.nextInt(numberNodes)+1)) == srcNode);
+            if (!valueToNodeMap.get(srcNode).outGoing.contains(valueToNodeMap.get(targetNode))) {
+                valueToNodeMap.get(srcNode).outGoing.add(valueToNodeMap.get(targetNode));
+                numEdges--;
+            }
+        }
+        return valueToNodeMap.values().iterator().next();
+    }
 
+    void printGraph(Node printNode, Set<Node> printedNodes, String recursionLevel) {
+        System.out.println(recursionLevel+"node:"+printNode.value);
+        printedNodes.add(printNode);
+        System.out.println(recursionLevel+"outGoing:");
+        for (Node node: printNode.outGoing) {
+            if (!printedNodes.contains(node)) {
+                printGraph(node, printedNodes, recursionLevel+">");
+            } else {
+                System.out.println(recursionLevel+"(node):"+node.value);
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        // create a graph
+        CopyDirectedGraph copyDirectedGraph = new CopyDirectedGraph();
+        Node node = copyDirectedGraph.createGraph(4, 12);
+        copyDirectedGraph.printGraph(node, new HashSet<>(), ">");
+        System.out.println("=========================");
+        Node copiedGraph = copyDirectedGraph.copy(node);
+        copyDirectedGraph.printGraph(copiedGraph, new HashSet<>(), ">");
     }
 }
