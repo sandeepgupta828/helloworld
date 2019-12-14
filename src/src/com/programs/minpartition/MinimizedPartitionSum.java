@@ -7,7 +7,9 @@ import java.util.List;
 //https://www.geeksforgeeks.org/allocate-minimum-number-pages/
 public class MinimizedPartitionSum {
     public static void main(String[] args) {
-        System.out.println(getMinPartitions(new int[]{15, 20, 30, 34, 50, 55, 60}, 7));
+        System.out.println(getMinPartitions(new int[]{15, 20, 30, 34, 50, 55, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70}, 4));
+        //System.out.println(getMinPartitions(new int[]{12, 34, 67, 90}, 2));
+
     }
 
     /*
@@ -21,12 +23,9 @@ public class MinimizedPartitionSum {
 
      next iterate over partitions starting from partition #2
 
-     each iteration see if
-     adjacent left partition has higher sum
-     if not: we are good, our initial partition assignment is good! with the min sum value as max value.
-     if yes:
-     we can move the left adjacent partition boundary such that new sum of two partitions is smaller than previous sums
-     essentially shift elements to partitions on right
+     each iteration we evaluate 2 adjacent partitions:
+     we find new boundary between 2 partitions which minimizes delta between new sum of two partitions (with new boundary)
+     this sum is close to ~totalSum/2
      we repeat this until partitions continue to update to arrive a distribution where sum of each partition is minimized
      */
     public static List<List<Integer>> getMinPartitions(int[] values, int partitionCount) {
@@ -62,25 +61,8 @@ public class MinimizedPartitionSum {
         do {
             paritionsUpdated = false;
             for (int i = 1; i < partitionCount; i++) {
-                int sumPrevPartition = getPartitionSum(valuesSum, partitionIndexes, i - 1);
-                int sumCurPartition = getPartitionSum(valuesSum, partitionIndexes, i);
-                int maxSum;
-                if (sumPrevPartition > sumCurPartition) {
-                    maxSum = sumPrevPartition;
-                    // see if partition boundary can be moved that lowers the "max" sum these 2 adjacent partitions
-                    for (int k = partitionIndexes[i - 1][1]; k >= partitionIndexes[i - 1][0]; k--) {
-                        if ((sumCurPartition + values[k]) < maxSum) {
-                            sumCurPartition += values[k];
-                            sumPrevPartition -= values[k];
-                            // acquire values
-                            partitionIndexes[i - 1][1] -= 1;
-                            partitionIndexes[i][0] -= 1;
-                            paritionsUpdated = true;
-                        } else {
-                            break;
-                        }
-                    }
-                }
+                boolean updated = adjustPartitionBoundayToMinimizeSumDistribution(values, valuesSum, partitionIndexes, i-1, i);
+                paritionsUpdated = paritionsUpdated || updated;
             }
         } while (paritionsUpdated);
 
@@ -96,6 +78,37 @@ public class MinimizedPartitionSum {
         }
         System.out.println(partitionSums);
         return partitionLists;
+    }
+
+    private static boolean adjustPartitionBoundayToMinimizeSumDistribution(int[] values, int[] valuesSum, int[][] partitionIndexes, int p1, int p2) {
+        int p1Boundary = partitionIndexes[p1][1];
+        int midCount = 0;
+        int minAbsDiff = -1;
+        for (int i=partitionIndexes[p1][0];i<=partitionIndexes[p2][1];i++) {
+            int sum1 = getSumBetweenIndexesInclusive(valuesSum, partitionIndexes[p1][0], i);
+            int sum2 = getSumBetweenIndexesInclusive(valuesSum, i+1, partitionIndexes[p2][1]);
+            int diff = Math.abs(sum1-sum2);
+            if (minAbsDiff < 0) {
+                minAbsDiff = Math.abs(sum1-sum2);
+                midCount++;
+            } else if (diff <= minAbsDiff){
+                minAbsDiff = diff;
+                midCount++;
+            } else {
+                break;
+            }
+        }
+        if (p1Boundary != (partitionIndexes[p1][0]+midCount-1)) {
+            // set new boundary
+            partitionIndexes[p1][1] = partitionIndexes[p1][0]+midCount-1;
+            partitionIndexes[p2][0] = partitionIndexes[p1][0]+midCount;
+            return true;
+        }
+        return false;
+    }
+
+    private static int getSumBetweenIndexesInclusive(int[] valuesSum, int i1, int i2) {
+        return valuesSum[i2+1] - valuesSum[i1];
     }
 
     private static int getPartitionSum(int[] valuesSum, int[][] partitionIndexes, int partition) {
