@@ -21,7 +21,6 @@ public class LongestPalindrome {
         --keep a record of index of a prev character(s) where a palindrome starts and ends at this character (length > 1)
         --check if this character extends palindrome ending at last character: record prev character index
           palindrome is extended by 2 if a prev index exists where character is same as this character OR
-          it may also extend by 1 if palindrome consists of all same characters
         --check if this character starts a new palindrome (length > 1: 2/3 i.e. even or odd) : record prev character index with longer palindrome
 
          */
