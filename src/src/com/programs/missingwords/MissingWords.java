@@ -10,6 +10,10 @@ public class MissingWords {
      * The function accepts following parameters:
      *  1. STRING s
      *  2. STRING t
+     *  Example:
+     * s = "I am doing programming at HackerRank to improve my programming"
+     * t = "am programming HackerRank to improve"
+     * missing words = [I, doing, at, my, programming]
      */
 
     public static List<String> missingWords(String s, String t) {
@@ -43,7 +47,7 @@ public class MissingWords {
     }
 
     public static void main(String[] args) {
-        System.out.println(MissingWords.missingWords("I am using HackerRank to improve programming", "am HackerRank to improve"));
+        System.out.println(MissingWords.missingWords("I am doing programming at HackerRank to improve my programming", "am programming HackerRank to improve"));
     }
 
 }
